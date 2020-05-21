@@ -32,18 +32,24 @@ class ListaAtomica {
         // Construimos el nuevo nodo:
         Nodo *nuevoNodo = new Nodo(valor);
         // Obtenemos la vieja cabeza:
-        std::atomic<Nodo *> viejaCabeza = _cabeza.load();
 
         // SOLUCION 1
+        std::atomic<Nodo *> viejaCabeza = _cabeza.load();
         // Actualizamos la cabeza:
         _cabeza = nuevoNodo;
         // Enlazamos el nuevo nodo con la vieja cabeza pero atómicamente:
         nuevoNodo->_siguiente = viejaCabeza;
 
         // SOLUCION 2
-        while(!_viejaCabeza.compare_exchange_weak(viejaCabeza, nuevoNodo)) {
+        /*Nodo *viejaCabeza = _cabeza.load();
+        // if _cabeza == viejaCabeza then
+                //_cabeza = nuevoNodo
+        // else
+                //viejaCabeza = _cabeza y vuelve a intentar, esta vez con viejaCabeza actualizado.
+
+        while(!_cabeza.compare_exchange_weak(viejaCabeza, nuevoNodo)) {
             nuevoNodo -> _siguiente = viejaCabeza;
-        }
+        }*/
     }
 
     T &cabeza() const {
