@@ -18,7 +18,27 @@ unsigned int HashMapConcurrente::hashIndex(std::string clave) {
 }
 
 void HashMapConcurrente::incrementar(std::string clave) {
-    // Completar (Ejercicio 2)
+    /* El enunciado dice "Se debe garantizar que solo haya contencion en caso de colision de hash: es decir, si dos o mas
+    threads intentan incrementar concurrentemente claves que no colisionan, deben poder hacerlo sin inconvenientes"
+    PONELE que tenemos dos threas. Uno ejecuta incrementar en tabla[i] y otro en tabla[j]. Entre ellos no tienen por qué restringirse.
+    Pero si ambos ejecutan incrementar en tabla[i], necesitamos algo que deje pasar a uno y haga esperar al otro. Mepa que necesitamos
+    eso para cada una de las 26 posiciones de la tabla... Un arreglo de 26 mutex?*/
+    static unsigned int indice = HashMapConcurrente::hashIndex(clave);
+    ListaAtomica<hashMapPair> *lista = tabla[indice];
+    bool encontrado = false;
+    // TODO: aca iria algo que maneje bien las colisiones. mutex[indice]? hacerle .wait()?
+    ListaAtomica<hashMapPair>::Iterador it = (*lista).crearIt();
+    while(it.haySiguiente() && !encontrado) {
+        if(it.siguiente().first == clave) {
+            it.siguiente().second++;
+            encontrado = true;
+        }
+        it.avanzar();
+    }
+    if(!encontrado) {
+        (*lista).insertar(make_pair(clave,1));
+    }
+    // TODO: hacer .signal()?
 }
 
 std::vector<std::string> HashMapConcurrente::claves() {
