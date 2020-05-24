@@ -27,7 +27,8 @@ void HashMapConcurrente::incrementar(std::string clave) {
     ListaAtomica<hashMapPair> *lista = tabla[indice];
     bool encontrado = false;
     // TODO: aca iria algo que maneje bien las colisiones. mutex[indice]? hacerle .wait()?
-    ListaAtomica<hashMapPair>::Iterador it = (*lista).crearIt();
+    //       tambien algo para manejar la concurrencia con maximo?
+    ListaAtomica<hashMapPair>::Iterador it = (*lista).crearIt(); // capaz podiamos meter auto it.
     while(it.haySiguiente() && !encontrado) {
         if(it.siguiente().first == clave) {
             it.siguiente().second++;
@@ -43,10 +44,35 @@ void HashMapConcurrente::incrementar(std::string clave) {
 
 std::vector<std::string> HashMapConcurrente::claves() {
     // Completar (Ejercicio 2)
+    vector<string> res = {};
+    // Si recorremos todos los tabla[i] y cada uno de los nodos de esas listas, nos puede re cagar que entre medio ejecuten incrementar().
+    // Si esperamos a que no haya NINGUN incrementar() ejecutandose, podria bloquearse para siempre esperando a que todos los incrementar() terminen asi que un semaforo no parece lo mejor.
+    // Y si usamos un mutex que valga 0 mientras claves() se ejecuta, estamos bloqueando a incrementar(). Claves() debe ser no bloqueante.
+    // Capaz la mejor solucion es tener armadita una struct con el vector de claves y el tamaño de este vector, asi lo actualizamos atomicamente cada vez que alguien incrementa.
+
+/* Ponele que ya tenemos una struct global asi:
+struct vectorDeClaves{
+    vector<string> claves = {};
+    unsigned int contador = 0;
+};
+Y en cada llamada a incrementar(), si se crea una nueva clave, agregarla a esta estructura y hacer contador++
+Entonces acá en claves() solo haria falta ver si contador sigue igual que antes (o sea que nadie se metio en el medio) y en caso positivo devolver vectorDeClaves.claves*/
+
+    return res;
 }
 
 unsigned int HashMapConcurrente::valor(std::string clave) {
-    // Completar (Ejercicio 2)
+    // es recorrer la tabla[indice] con un iterador mientras it.haySiguiente() && it.siguiente().first != clave... cuando llegas
+    // a esa condicion, te fijas si devolves el valor guardado o cero porque no encontraste la clave en el diccionario.
+    // asi todo bien, es no bloqueante porque no tiene semaforos y es wait free porque no espera por nadie, se ejecuta y punto.
+    // tiene condiciones de carrera? maybe...
+
+    // TODO: capaz hay que ver mutex[indice] y hacerle .wait()
+    auto it = tabla[HashMapConcurrente::hashIndex(clave)]->crearIt();
+    while(it.haySiguiente() && it.siguiente().first != clave) {
+        it.avanzar();
+    }
+    return it.haySiguiente() ? it.siguiente().second : 0; // si it.haySiguiente() NO es null, entonces el ciclo terminó porque se cumplió it.siguiente().first == clave y entonces devolvemos su valor.
 }
 
 hashMapPair HashMapConcurrente::maximo() {
@@ -69,7 +95,7 @@ hashMapPair HashMapConcurrente::maximo() {
             // hashMapPair *possibleNewMax = new hashMapPair;
             // possibleNewMax->first = it.siguiente().first;
             // possibleNewMax->second = it.siguiente().second;
-            
+
             // // habría que ver si se puede hacer todo el if atómico
             // if (possibleNewMax->second > max->second){
             //     max = possibleNewMax;
