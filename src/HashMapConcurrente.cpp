@@ -44,7 +44,7 @@ void HashMapConcurrente::incrementar(std::string clave) {
 
 std::vector<std::string> HashMapConcurrente::claves() {
     // Completar (Ejercicio 2)
-    vector<string> res = {};
+    std::vector<std::string> res = {};
     // Si recorremos todos los tabla[i] y cada uno de los nodos de esas listas, nos puede re cagar que entre medio ejecuten incrementar().
     // Si esperamos a que no haya NINGUN incrementar() ejecutandose, podria bloquearse para siempre esperando a que todos los incrementar() terminen asi que un semaforo no parece lo mejor.
     // Y si usamos un mutex que valga 0 mientras claves() se ejecuta, estamos bloqueando a incrementar(). Claves() debe ser no bloqueante.
