@@ -17,17 +17,17 @@ unsigned int HashMapConcurrente::hashIndex(std::string clave) {
     return (unsigned int)(clave[0] - 'a');
 }
 
+std::mutex mutexes[HashMapConcurrente::cantLetras]; // se inicializa en estado unlocked.
+// deberia ir en el .hpp pero me tiraba error de multiples declaraciones y no pude arreglarlo. Si alguien puede, joya
+
 void HashMapConcurrente::incrementar(std::string clave) {
-    /* El enunciado dice "Se debe garantizar que solo haya contencion en caso de colision de hash: es decir, si dos o mas
-    threads intentan incrementar concurrentemente claves que no colisionan, deben poder hacerlo sin inconvenientes"
-    PONELE que tenemos dos threas. Uno ejecuta incrementar en tabla[i] y otro en tabla[j]. Entre ellos no tienen por qué restringirse.
-    Pero si ambos ejecutan incrementar en tabla[i], necesitamos algo que deje pasar a uno y haga esperar al otro. Mepa que necesitamos
-    eso para cada una de las 26 posiciones de la tabla... Un arreglo de 26 mutex?*/
+    /* Se debe garantizar que solo haya contencion en caso de colision de hash.
+    Supongamos que tenemos dos threads. Uno ejecuta incrementar en tabla[i] y otro en tabla[j]. Entre ellos no tienen por qué restringirse.
+    Pero si ambos ejecutan incrementar en tabla[i], necesitamos permitirle la ejecución a uno y hacer esperar al otro. Para esto, tenemos un arreglo de 26 mutex.*/
     static unsigned int indice = HashMapConcurrente::hashIndex(clave);
     ListaAtomica<hashMapPair> *lista = tabla[indice];
+    mutexes[indice].lock(); // Comienzo de la sección crítica:
     bool encontrado = false;
-    // TODO: aca iria algo que maneje bien las colisiones. mutex[indice]? hacerle .wait()?
-    //       tambien algo para manejar la concurrencia con maximo?
     ListaAtomica<hashMapPair>::Iterador it = (*lista).crearIt(); // capaz podiamos meter auto it.
     while(it.haySiguiente() && !encontrado) {
         if(it.siguiente().first == clave) {
@@ -37,9 +37,9 @@ void HashMapConcurrente::incrementar(std::string clave) {
         it.avanzar();
     }
     if(!encontrado) {
-        (*lista).insertar(make_pair(clave,1));
+        (*lista).insertar(std::make_pair(clave,1));
     }
-    // TODO: hacer .signal()?
+    mutexes[indice].unlock(); // Fin de la sección crítica.
 }
 
 std::vector<std::string> HashMapConcurrente::claves() {
@@ -130,9 +130,9 @@ void *funcion_thread(void *arg) {
             }
         }
     }
-}
+}*/
 
-hashMapPair HashMapConcurrente::maximoParalelo(unsigned int cantThreads) {
+hashMapPair HashMapConcurrente::maximoParalelo(unsigned int cantThreads) {/*
     // Completar (Ejercicio 3)
     pthread_t tid[cantThreads];
 
@@ -152,8 +152,8 @@ hashMapPair HashMapConcurrente::maximoParalelo(unsigned int cantThreads) {
         pthread_join(tid[i], NULL);
     }
 
-    return *max;
+    return *max;*/
+    return std::make_pair("",0); // BORRAR ESTA LINEA, era para que compilen bien las cosas, perdon!
 }
-*/
 
 #endif
