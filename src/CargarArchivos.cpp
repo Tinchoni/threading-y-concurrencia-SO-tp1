@@ -5,6 +5,7 @@
 #include <iostream>
 #include <fstream>
 #include <pthread.h>
+#include <atomic>
 
 #include "CargarArchivos.hpp"
 
@@ -24,6 +25,7 @@ int cargarArchivo(
     }
     while (file >> palabraActual) {
         // Completar (Ejercicio 4)
+        hashMap.incrementar(palabraActual);
         cant++;
     }
     // Cierro el archivo.
@@ -36,6 +38,19 @@ int cargarArchivo(
     return cant;
 }
 
+struct thread_args {
+    HashMapConcurrente &hashMap;
+    std::vector<std::string> filePaths;
+    std::atomic<int> &contador;
+};
+
+void *funcion_thread(void *arg) {
+    thread_args *args_struct = (thread_args *) arg;
+
+    int indice = args_struct->contador.fetch_add(1);
+
+    cargarArchivo(args_struct->hashMap, args_struct->filePaths[indice]);
+}
 
 void cargarMultiplesArchivos(
     HashMapConcurrente &hashMap,
@@ -43,6 +58,20 @@ void cargarMultiplesArchivos(
     std::vector<std::string> filePaths
 ) {
     // Completar (Ejercicio 4)
+    pthread_t tid[cantThreads];
+    
+    std::atomic<int> contador(0);
+    
+    thread_args args = {hashMap, filePaths, contador};
+    
+
+    for (int i = 0; i < cantThreads; i++){
+        pthread_create(&tid[i], NULL, funcion_thread, &args);
+    }
+
+    for (int i = 0; i < cantThreads; i++){
+        pthread_join(tid[i], NULL);
+    }
 }
 
 #endif
