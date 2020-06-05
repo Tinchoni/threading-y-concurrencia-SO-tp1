@@ -23,10 +23,24 @@ class HashMapConcurrente {
     hashMapPair maximo();
     hashMapPair maximoParalelo(unsigned int cantThreads);
 
+   ListaAtomica<hashMapPair> *tabla[HashMapConcurrente::cantLetras];
  private:
-    ListaAtomica<hashMapPair> *tabla[HashMapConcurrente::cantLetras];
+    
 
     static unsigned int hashIndex(std::string clave);
+
+    /*
+    struct claveStruct{
+      std::vector<std::string> vectorClaves;
+      unsigned int cantClaves;
+
+      bool operator==(const claveStruct & nuevo) const {
+         return(this->cantClaves == nuevo.cantClaves);
+      }
+    };
+
+    std::atomic <claveStruct *> vectorDeClaves; 
+    */
 };
 
 #endif  /* HMC_HPP */

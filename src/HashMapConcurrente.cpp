@@ -80,80 +80,94 @@ hashMapPair HashMapConcurrente::maximo() {
     max->second = 0;
 
     for (unsigned int index = 0; index < HashMapConcurrente::cantLetras; index++) {
+
+        //No quiero que haya un thread incrementando en una lista al mismo tiempo que la leo   
+        mutexes[index].lock();
+
         for (
             auto it = tabla[index]->crearIt();
             it.haySiguiente();
             it.avanzar()
         ) {
-            // version original
             if (it.siguiente().second > max->second) {
                 max->first = it.siguiente().first;
                 max->second = it.siguiente().second;
             }
-            /*
-            // ejercicio 3a
-            // hashMapPair *possibleNewMax = new hashMapPair;
-            // possibleNewMax->first = it.siguiente().first;
-            // possibleNewMax->second = it.siguiente().second;
-
-            // // habría que ver si se puede hacer todo el if atómico
-            // if (possibleNewMax->second > max->second){
-            //     max = possibleNewMax;
-            // }
-            */
+            //Tal vez habria que hacer algo por si se corre mas de un maximo() a la vez pero no dice nada el enunciado
         }
     }
+    for (unsigned int index = 0; index < HashMapConcurrente::cantLetras; index++) {
+    mutexes[index].unlock();
+    }
+    //Supongo que tengo tres listas, el máximo de la primera es 3, el de la segunda es 5, y el de la tercera es 7, el global es 7
+    //Cuando termino de recorrer la primera fila tengo que el max es 3, mientras recorro la segunda se incrementa el maximo de la primera
+    // a 10, lo que lo hace el maximo global, sigo recorriendo la segunda, se incrementa el maximo de esta a 8, no es el maximo global
+    // pero sera el return de la funcion.
+
+    //Para evitar esto lockeo las listas que visito hasta que termine de ejecutar en este caso el return sera 7, solo devolvera algun maximo global
+    // de algun momento y no local
 
     return *max;
 }
-/*
+
 struct thread_args {
-    hashMapPair &max;
-    int (&filas)[HashMapConcurrente::cantLetras];
+    HashMapConcurrente* dicc;
+    hashMapPair* max;
+    int filas[HashMapConcurrente::cantLetras];
 };
 
 // Recorre las filas sin ocupar y las marca atómicamente cuando empieza
-void *funcion_thread(void *arg) {
+void *funcion_thread2(void *arg) {
     thread_args *args_struct = (thread_args *) arg;
 
     for (unsigned int index = 0; index < HashMapConcurrente::cantLetras; index++) {
+        mutexes[index].lock();
         // Si filas[index] es 1, ya fue tomada y avanzo. Sino la ocupo
-        if (args_struct->filas[index].atomic_compare_exchange_strong(1,1)) break;
-        for (
-            auto it = tabla[index]->crearIt();
-            it.haySiguiente();
-            it.avanzar()
-        ) {
-            if (it.siguiente().second > args_struct->max->second) {
-                args_struct->max->first = it.siguiente().first;
-                args_struct->max->second = it.siguiente().second;
+        
+        if(args_struct->filas[index]==0){
+            for (auto it = args_struct->dicc->tabla[index]->crearIt(); it.haySiguiente(); it.avanzar()) {
+                if (it.siguiente().second > args_struct->max->second) {
+                    args_struct->max->first = it.siguiente().first;
+                    args_struct->max->second = it.siguiente().second;
+                }
             }
+            args_struct->filas[index]==1;
         }
-    }
-}*/
+        /*if (args_struct->filas[index].atomic_compare_exchange_strong(1,1)){
 
-hashMapPair HashMapConcurrente::maximoParalelo(unsigned int cantThreads) {/*
+            for (auto it = args_struct->dicc->tabla[index]->crearIt(); it.haySiguiente(); it.avanzar()) {
+                if (it.siguiente().second > args_struct->max->second) {
+                    args_struct->max->first = it.siguiente().first;
+                    args_struct->max->second = it.siguiente().second;
+                }
+            }
+        }*/
+        mutexes[index].unlock();
+    }
+}
+
+hashMapPair HashMapConcurrente::maximoParalelo(unsigned int cantThreads) {
     // Completar (Ejercicio 3)
     pthread_t tid[cantThreads];
 
     // declarar thread_args
     int filas[HashMapConcurrente::cantLetras] = {0};
 
-    hashMapPair *max = new hashMapPair();
+    hashMapPair* max = new hashMapPair();
     max->second = 0;
 
-    thread_args args = {*max, filas};
+    thread_args args = {this, max, *filas};
 
     for (int i = 0; i < cantThreads; i++){
-        pthread_create(&tid[i], NULL, funcion_thread, &args);
+        pthread_create(&tid[i], NULL, funcion_thread2, &args);
     }
 
     for (int i = 0; i < cantThreads; i++){
         pthread_join(tid[i], NULL);
     }
 
-    return *max;*/
-    return std::make_pair("",0); // BORRAR ESTA LINEA, era para que compilen bien las cosas, perdon!
+    return *max;
+    //return std::make_pair("",0); // BORRAR ESTA LINEA, era para que compilen bien las cosas, perdon!
 }
 
 #endif
