@@ -48,8 +48,11 @@ void *funcion_thread(void *arg) {
     thread_args *args_struct = (thread_args *) arg;
 
     int indice = args_struct->contador.fetch_add(1);
+    while (indice < args_struct->filePaths.size()){
+        cargarArchivo(args_struct->hashMap, args_struct->filePaths[indice]);
+        indice = args_struct->contador.fetch_add(1);
+    }
 
-    cargarArchivo(args_struct->hashMap, args_struct->filePaths[indice]);
 }
 
 void cargarMultiplesArchivos(
