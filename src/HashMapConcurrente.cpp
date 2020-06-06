@@ -10,6 +10,8 @@
 HashMapConcurrente::HashMapConcurrente() {
     for (unsigned int i = 0; i < HashMapConcurrente::cantLetras; i++) {
         tabla[i] = new ListaAtomica<hashMapPair>();
+        claveStruct* punt = new claveStruct;
+        vectorDeClaves = punt;
     }
 }
 
@@ -38,13 +40,16 @@ void HashMapConcurrente::incrementar(std::string clave) {
     }
     if(!encontrado) {
         (*lista).insertar(std::make_pair(clave,1));
+        vectorDeClaves->vectorClaves.push_back(clave);
+        vectorDeClaves->cantClaves++;
+
     }
     mutexes[indice].unlock(); // Fin de la sección crítica.
 }
 
 std::vector<std::string> HashMapConcurrente::claves() {
     // Completar (Ejercicio 2)
-    std::vector<std::string> res = {};
+    std::vector<std::string> res = vectorDeClaves->vectorClaves;
     // Si recorremos todos los tabla[i] y cada uno de los nodos de esas listas, nos puede re cagar que entre medio ejecuten incrementar().
     // Si esperamos a que no haya NINGUN incrementar() ejecutandose, podria bloquearse para siempre esperando a que todos los incrementar() terminen asi que un semaforo no parece lo mejor.
     // Y si usamos un mutex que valga 0 mientras claves() se ejecuta, estamos bloqueando a incrementar(). Claves() debe ser no bloqueante.

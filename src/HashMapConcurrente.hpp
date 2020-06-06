@@ -25,11 +25,10 @@ class HashMapConcurrente {
 
    ListaAtomica<hashMapPair> *tabla[HashMapConcurrente::cantLetras];
  private:
-    
 
     static unsigned int hashIndex(std::string clave);
 
-    /*
+    
     struct claveStruct{
       std::vector<std::string> vectorClaves;
       unsigned int cantClaves;
@@ -39,8 +38,8 @@ class HashMapConcurrente {
       }
     };
 
-    std::atomic <claveStruct *> vectorDeClaves; 
-    */
+    claveStruct* vectorDeClaves = nullptr; 
+   
 };
 
 #endif  /* HMC_HPP */
