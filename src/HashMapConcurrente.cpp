@@ -10,8 +10,6 @@
 HashMapConcurrente::HashMapConcurrente() {
     for (unsigned int i = 0; i < HashMapConcurrente::cantLetras; i++) {
         tabla[i] = new ListaAtomica<hashMapPair>();
-        claveStruct* punt = new claveStruct;
-        vectorDeClaves = punt;
     }
 }
 
@@ -21,6 +19,8 @@ unsigned int HashMapConcurrente::hashIndex(std::string clave) {
 
 std::mutex mutexes[HashMapConcurrente::cantLetras]; // se inicializa en estado unlocked.
 // deberia ir en el .hpp pero me tiraba error de multiples declaraciones y no pude arreglarlo. Si alguien puede, joya
+
+std::mutex mutexeMax;
 
 void HashMapConcurrente::incrementar(std::string clave) {
     /* Se debe garantizar que solo haya contencion en caso de colision de hash.
@@ -130,12 +130,16 @@ void *funcion_thread2(void *arg) {
         mutexes[index].lock();
         // Si filas[index] es 1, ya fue tomada y avanzo. Sino la ocupo
         
+
         if(args_struct->filas[index]==0){
             for (auto it = args_struct->dicc->tabla[index]->crearIt(); it.haySiguiente(); it.avanzar()) {
+                
+                mutexeMax.lock();
                 if (it.siguiente().second > args_struct->max->second) {
                     args_struct->max->first = it.siguiente().first;
                     args_struct->max->second = it.siguiente().second;
                 }
+                mutexeMax.unlock();
             }
             args_struct->filas[index]==1;
         }

@@ -38,7 +38,7 @@ class HashMapConcurrente {
       }
     };
 
-    claveStruct* vectorDeClaves = nullptr; 
+    claveStruct* vectorDeClaves = new claveStruct; 
    
 };
 
