@@ -1,11 +1,13 @@
 CXX = g++
 CXXFLAGS = -std=c++11 -Wall
 LDFLAGS = -lpthread
+LDFLAGSEXP = -lpthread -lrt
 
 BUILD_DIR = ./build
 
 TARGET = ContarPalabras
 TEST_TARGET = UnitTests
+EXP_TARGET = exp
 
 OBJECTS = HashMapConcurrente.o CargarArchivos.o
 
@@ -23,6 +25,19 @@ $(BUILD_DIR)/%: src/%.cpp $(OBJECTS:%=$(BUILD_DIR)/%)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
 .PHONY: all test build clean debug
+
+exp: build $(BUILD_DIR)/$(EXP_TARGET)
+	$(BUILD_DIR)/$(EXP_TARGET)
+
+$(BUILD_DIR)/%.o: src/%.cpp
+	@mkdir -p $(@D)
+	$(CXX) $(CXXFLAGS) -c $< -o $@ $(LDFLAGS)
+
+$(BUILD_DIR)/%: src/%.cpp $(OBJECTS:%=$(BUILD_DIR)/%)
+	@mkdir -p $(@D)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGSEXP)
+
+.PHONY: all exp build clean debug
 
 build:
 	@mkdir -p $(BUILD_DIR)
