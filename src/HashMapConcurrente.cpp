@@ -134,12 +134,12 @@ void *funcion_thread2(void *arg) {
         if(args_struct->filas[index]==0){
             for (auto it = args_struct->dicc->tabla[index]->crearIt(); it.haySiguiente(); it.avanzar()) {
                 
-                mutexeMax.lock();
+                //mutexeMax.lock();
                 if (it.siguiente().second > args_struct->max->second) {
                     args_struct->max->first = it.siguiente().first;
                     args_struct->max->second = it.siguiente().second;
                 }
-                mutexeMax.unlock();
+                //mutexeMax.unlock();
             }
             args_struct->filas[index]==1;
         }
