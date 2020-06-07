@@ -33,6 +33,6 @@
   **No evalúan aspectos de concurrencia** y por lo tanto no brindan ninguna
   garantía de que el código escrito sea correcto.
   
-  ## Experimentación
+## Experimentación
 * Ejecutando `make exp`, se compila y se ejecutan los experimentos planteados en
   el trabajo práctico. De esta forma, los resultados son replicables.
