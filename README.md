@@ -1,11 +1,10 @@
 # Trabajo práctico 1 - Threading
 
 ## Estructura
-* En la carpeta `src` encontrarán el código que deben completar.
-* En la carpeta `data` encontrarán algunos archivos que pueden usar para probar
-  su solución. Les recomendamos que hagan pruebas con otros archivos, en
-  particular, archivos de mayor tamaño.
-* En la carpeta `scripts` encontrarán un script de `awk` que pueden usar para
+* En la carpeta `src` se encuentra el código completo.
+* En la carpeta `data` se encuentran algunos archivos que pueden usamos para probar
+  nuestra solución.
+* En la carpeta `scripts` hay un script de `awk` que pueden usar para
   contar la cantidad de apariciones de palabras en un archivo. Combinando con
   el comando `sort` pueden usarlo para averiguar las palabras con más
   apariciones y contrastar con su solución, ejecutando:
@@ -33,3 +32,7 @@
   verificando algunos aspectos básicos del funcionamiento del código.
   **No evalúan aspectos de concurrencia** y por lo tanto no brindan ninguna
   garantía de que el código escrito sea correcto.
+  
+  ## Experimentación
+* Ejecutando `make exp`, se compila y se ejecutan los experimentos planteados en
+  el trabajo práctico. De esta forma, los resultados son replicables.
