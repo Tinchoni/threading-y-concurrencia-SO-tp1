@@ -47,7 +47,13 @@ void HashMapConcurrente::incrementar(std::string clave) {
 
 std::vector<std::string> HashMapConcurrente::claves() {
     // Completar (Ejercicio 2)
-    std::vector<std::string> res = vectorDeClaves->vectorClaves;
+    std::vector<std::string> res;
+
+    for (int indice = 0; indice < HashMapConcurrente::cantLetras; indice++){
+        for (auto it = tabla[indice]->crearIt(); it.haySiguiente(); it.avanzar()) {
+            res.push_back(it.siguiente().first);
+        }
+    }
 
     return res;
 }
